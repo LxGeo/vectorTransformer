@@ -4,12 +4,6 @@ project(vectorTransformer)
 
 set(EXECUTABLE_OUTPUT_PATH ../../out/bin/${CMAKE_BUILD_TYPE})
 
-set(EIGEN3_4_INCLUDE_DIR "$ENV{EIGEN3_4_INCLUDE_DIR}")
-if(NOT EIGEN3_4_INCLUDE_DIR)
-    message(FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3_4 installation.")
-endif()
-include_directories ("${EIGEN3_4_INCLUDE_DIR}")
-
 set(OPTIM_INCLUDE_DIR "$ENV{OPTIM_INCLUDE_DIR}")
 if(NOT OPTIM_INCLUDE_DIR)
     message(FATAL_ERROR "Please point the environment variable OPTIM_INCLUDE_DIR to the include directory of your optim installation.")
@@ -41,7 +35,7 @@ else()
   message(STATUS "NOTICE: This exe requires CGAL and will not be compiled.")
 endif()
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 if (OpenCV_FOUND)
   include_directories(${OpenCV_INCLUDE_DIRS})
 else()
@@ -64,14 +58,12 @@ endif()
 
 include_directories(include)
 include_directories("$ENV{LX_GEO_REPOS_ROOT}/LxGeoCppLibs/libs/shared/include/")
-include_directories("$ENV{LX_GEO_REPOS_ROOT}/LxGeoCppLibs/libs/IO_DATA/include/")
+include_directories("$ENV{LX_GEO_REPOS_ROOT}/LxGeoCppLibs/libs/shared/include/io/")
 
 
 file(GLOB_RECURSE SOURCE include/* src/*)
 add_executable(${PROJECT_NAME} ${SOURCE})
 add_dependencies(${PROJECT_NAME} LxGeoFactoryShared)
-add_dependencies(${PROJECT_NAME} IO_DATA)
-
 set(USED_BOOST_LIBS ${Boost_LOG_SETUP_LIBRARY} ${Boost_LOG_LIBRARY} 
   ${Boost_FILESYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY}  )
 target_link_libraries(${PROJECT_NAME} ${USED_BOOST_LIBS})
@@ -80,9 +72,6 @@ target_link_libraries(${PROJECT_NAME} ${GDAL_LIBRARIES} ${OpenCV_LIBS} fmt::fmt 
 
 target_link_libraries(${PROJECT_NAME} debug ../out/Debug/LxGeoFactoryShared)
 target_link_libraries(${PROJECT_NAME} optimized ../out/Release/LxGeoFactoryShared)
-
-target_link_libraries(${PROJECT_NAME} debug ../out/Debug/IO_DATA)
-target_link_libraries(${PROJECT_NAME} optimized ../out/Release/IO_DATA)
 
 target_compile_options(${PROJECT_NAME} PRIVATE ${OpenMP_CXX_FLAGS})
 

@@ -10,7 +10,7 @@ namespace LxGeo {
         class self_translator
         {
         public:
-            typedef typename Aggregator<pixel_values_type> agg_t;
+            typedef GeometryFactoryShared::Aggregator<pixel_values_type> agg_t;
         private:
             agg_t* pixel_values_aggreagtor;
             double x_scale, y_scale;

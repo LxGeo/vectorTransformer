@@ -6,7 +6,7 @@
 #include "stitching/raster_stitcher.h"
 #include "ops.h"
 #include "tqdm/tqdm.h"
-#include "graph_weights/polygons_spatial_weights.h"
+#include "graph_weights/spatial_weights.h"
 
 
 namespace LxGeo
@@ -42,7 +42,7 @@ namespace LxGeo
 			//output dirs creation
 			boost::filesystem::path output_path(params->output_basename);
 			boost::filesystem::path output_parent_dirname = output_path.parent_path();
-			boost::filesystem::path output_temp_path = output_parent_dirname / params->temp_dir;
+			boost::filesystem::path output_temp_path = output_parent_dirname;// / params->temp_dir;
 			params->temp_dir = output_temp_path.string();
 			if (!boost::filesystem::exists(output_parent_dirname))
 			{
@@ -90,12 +90,12 @@ namespace LxGeo
 			std::vector<Boost_Polygon_2> elementary_pinned_geometry_container;
 			elementary_pinned_geometry_container.reserve(target_shape.geometries_container.size());
 
-			PolygonSpatialWeights PSW = PolygonSpatialWeights(target_shape.geometries_container);
-			WeightsDistanceBandParams wdbp = { 15, false, -1, [](double x)->double { return x; } };
-			PSW.fill_distance_band_graph(wdbp);
+			//PolygonSpatialWeights PSW = PolygonSpatialWeights(target_shape.geometries_container);
+			//WeightsDistanceBandParams wdbp = { 15, false, -1, [](double x)->double { return x; } };
+			//PSW.fill_distance_band_graph(wdbp);
 			tqdm bar;
-
-			/*for (size_t geom_idx = 0; geom_idx < target_shape.geometries_container.size(); geom_idx++) {
+			/*
+			for (size_t geom_idx = 0; geom_idx < target_shape.geometries_container.size(); geom_idx++) {
 				bar.progress(geom_idx, target_shape.geometries_container.size());
 				Elementary_Pinned_Pixels_Boost_Polygon_2<pixel_type> c_pinned_poly;
 				boost::geometry::assign(c_pinned_poly, target_shape.geometries_container[geom_idx]);
@@ -120,7 +120,11 @@ namespace LxGeo
 					c_pinned_poly.inners().resize(num_interior_rings); //temp because assign doesn't do it
 				boost::geometry::assign(c_pinned_poly, target_shape.geometries_container[geom_idx]);
 				rps.readStructrualPixels(c_pinned_poly);
-				cv::Scalar disp = agg(c_pinned_poly.outer_pinned_pixel);
+				std::list<cv::Vec2f> non_null;
+				std::copy_if(c_pinned_poly.outer_pinned_pixel.begin(), c_pinned_poly.outer_pinned_pixel.end(), std::back_inserter(non_null), [](cv::Vec2f i) {
+					return i[0] != NULL;
+					});
+				cv::Scalar disp = agg(non_null);
 				disp[0] *= ref_raster.geotransform[1];
 				disp[1] *= ref_raster.geotransform[5];
 				bg::strategy::transform::translate_transformer<double, 2, 2> trans_obj(disp[0], disp[1]);
